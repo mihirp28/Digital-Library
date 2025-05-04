@@ -10,6 +10,7 @@ app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'Mihir@001'
 app.config['MYSQL_DB'] = 'LibraryManagementSystem'
 
+
 mysql = MySQL(app)
 
 @app.route('/')
@@ -24,7 +25,7 @@ def login():
         password = request.form['password']  # In production, consider hashing the password
 
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM user WHERE username = %s AND password = %s", (username, password))
+        cursor.execute("SELECT * FROM `user` WHERE username = %s AND password = %s", (username, password))
         user = cursor.fetchone()
         cursor.close()
 
@@ -33,9 +34,8 @@ def login():
             session['user'] = {'id': user[0], 'name': user[1]}  # Adjust the indices based on your database schema
             return redirect(url_for('welcome'))  # Redirect to the welcome page on successful login
         else:
-            flash('Sorry, you are not registered')
             return redirect(url_for('register'))  # Redirect to the registration page if user not found
-    
+
     return render_template('login.html')
 
 
@@ -43,14 +43,13 @@ def login():
 def register():
     if request.method == 'POST':
         username = request.form['username']
-        password = request.form['password']     
+        password = request.form['password']
 
         # Insert the new user into the database
         cursor = mysql.connection.cursor()
         try:
-            cursor.execute("INSERT INTO user (username, password) VALUES (%s, %s)", (username, password))
+            cursor.execute("INSERT INTO `user` (username, password) VALUES (%s, %s)", (username, password))
             mysql.connection.commit()
-            flash('You have successfully registered!')
             return redirect(url_for('login'))
         except Exception as e:
             mysql.connection.rollback()
@@ -73,11 +72,12 @@ def admin_login():
     admin_password = request.form['adminPassword']
 
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT * FROM admin WHERE username = %s AND password = %s", (admin_id, admin_password,))
+    cursor.execute("SELECT * FROM `admin` WHERE username = %s AND `password` = %s", (admin_id, admin_password,))
     admin = cursor.fetchone()
     cursor.close()
 
     if admin:
+        session['admin_logged_in'] = True
         # Successful login, redirect to admin.html
         return redirect(url_for('admin_home'))
     else:
@@ -88,17 +88,19 @@ def admin_login():
 def admin_home():
     # Ensure this route is protected and only accessible by a logged-in admin
     return render_template('admin.html')
-    
+
 @app.route('/manage_books')
 def manage_books():
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT * FROM books")
+    cursor.execute("SELECT * FROM books WHERE is_deleted = FALSE")
     books = cursor.fetchall()
     cursor.close()
     return render_template('manage_books.html', books=books)
 
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
+    cursor = mysql.connection.cursor()
+
     if request.method == 'POST':
         title = request.form['title']
         author_id = request.form['author_id']
@@ -111,23 +113,54 @@ def add_book():
         sales_rank = request.form['sales_rank']
         units = request.form['units']
 
-        cursor = mysql.connection.cursor()
-        cursor.execute("INSERT INTO books (Title, AuthorID, GenreID, PublishingYear, AverageRating, RatingsCount, PublisherID, SalePrice, SalesRank, units) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                       (title, author_id, genre_id, publishing_year, average_rating, ratings_count, publisher_id, sale_price, sales_rank, units))
+        cursor.execute("""
+            INSERT INTO books
+            (Title, AuthorID, GenreID, PublishingYear, AverageRating, RatingsCount, PublisherID, SalePrice, SalesRank, units)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (title, author_id, genre_id, publishing_year, average_rating, ratings_count, publisher_id, sale_price, sales_rank, units))
         mysql.connection.commit()
         cursor.close()
         flash('Book successfully added!')
         return redirect(url_for('manage_books'))
-    return render_template('add_book.html')
+
+    # 👇 GET request: fetch dropdown data
+    cursor.execute("SELECT AuthorID, AuthorName FROM authors")
+    authors = cursor.fetchall()
+
+    cursor.execute("SELECT GenreID, GenreName FROM genres")
+    genres = cursor.fetchall()
+
+    cursor.execute("SELECT PublisherID, PublisherName FROM publishers")
+    publishers = cursor.fetchall()
+
+    cursor.close()
+    return render_template('add_book.html', authors=authors, genres=genres, publishers=publishers)
+
+
+# @app.route('/delete_book/<int:book_id>', methods=['POST'])
+# def delete_book(book_id):
+#     cursor = mysql.connection.cursor()
+#     cursor.execute("DELETE FROM books WHERE BookID = %s", [book_id])
+#     mysql.connection.commit()
+#     cursor.close()
+#     flash('Book successfully deleted!')
+#     return redirect(url_for('manage_books'))
+
 
 @app.route('/delete_book/<int:book_id>', methods=['POST'])
 def delete_book(book_id):
     cursor = mysql.connection.cursor()
-    cursor.execute("DELETE FROM books WHERE BookID = %s", [book_id])
-    mysql.connection.commit()
-    cursor.close()
-    flash('Book successfully deleted!')
+    try:
+        # Instead of deleting, mark the book as deleted
+        cursor.execute("UPDATE books SET is_deleted = TRUE WHERE BookID = %s", [book_id])
+        mysql.connection.commit()
+    except Exception as e:
+        mysql.connection.rollback()
+        flash(f'Error while deleting book: {str(e)}')
+    finally:
+        cursor.close()
     return redirect(url_for('manage_books'))
+
 
 # Placeholder route for editing books
 @app.route('/edit_book/<int:book_id>', methods=['GET', 'POST'])
@@ -156,9 +189,6 @@ def welcome():
 
 
 
-
-lid = []
-
 @app.route('/search_books', methods=['POST'])
 def search_books():
     search_query = request.form.get('search', '').strip()
@@ -172,7 +202,7 @@ def search_books():
                    JOIN authors ON books.AuthorID = authors.AuthorID
                    JOIN genres ON books.GenreID = genres.GenreID
                    JOIN publishers ON books.PublisherID = publishers.PublisherID
-                   WHERE books.Title LIKE %s"""
+                   WHERE books.is_deleted = FALSE AND books.Title LIKE %s"""
         cursor.execute(query, ('%' + search_query + '%',))
     else:
         query = """SELECT books.BookID, books.Title, authors.AuthorName, authors.AuthorRating,
@@ -181,31 +211,39 @@ def search_books():
                    FROM books
                    JOIN authors ON books.AuthorID = authors.AuthorID
                    JOIN genres ON books.GenreID = genres.GenreID
-                   JOIN publishers ON books.PublisherID = publishers.PublisherID"""
+                   JOIN publishers ON books.PublisherID = publishers.PublisherID
+                   WHERE books.is_deleted = FALSE"""
         cursor.execute(query)
 
     books = cursor.fetchall()
     cursor.close()
 
+    book_list = []
     if books:
-        session['books'] = [dict(
+        book_list = [dict(
             id=book[0], title=book[1], author=book[2], AuthorRating=book[3],
             GenreName=book[4], PublisherName=book[5], PublishingYear=book[6],
             AverageRating=book[7], SalesRank=book[8], SalePrice=book[9]
         ) for book in books]
     else:
         flash('No books matched your search. Showing all available books instead.')
-        session['books'] = []
 
-    return redirect(url_for('display'))
-
+    return render_template('display.html', books=book_list)
 
 
 @app.route('/display')
 def display():
-    # Retrieve books from session
-    books = session.get('books', [])
-    return render_template('display.html', books=books)
+    # Fallback if user navigates directly without search
+    return redirect(url_for('welcome'))
+
+
+
+
+# @app.route('/display')
+# def display():
+#     # Retrieve books from session
+#     books = session.get('books', [])
+#     return render_template('display.html', books=books)
 
 @app.route('/checkout', methods=['POST'])
 def checkout():
@@ -214,15 +252,14 @@ def checkout():
 
     selected_ids = request.form.getlist('selected_book_ids')
     if not selected_ids:
-        flash('No books selected.')
         return redirect(url_for('display'))
 
     cursor = mysql.connection.cursor()
     format_strings = ','.join(['%s'] * len(selected_ids))
     cursor.execute(f"""
-        SELECT 
-            BookID, Title, SalePrice 
-        FROM books 
+        SELECT
+            BookID, Title, SalePrice
+        FROM books
         WHERE BookID IN ({format_strings})
     """, selected_ids)
     books = cursor.fetchall()
@@ -241,7 +278,6 @@ def perform_checkout():
 
     selected_book_ids = request.form.getlist('selected_book_ids')
     if not selected_book_ids:
-        flash("No books selected for checkout.")
         return redirect(url_for('display'))
 
     cursor = mysql.connection.cursor()
