@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Search Results</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #ffffff;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .header-bar {
+      background: linear-gradient(to right, #89f7fe, #66a6ff);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .header-center {
+      flex-grow: 1;
+      max-width: 600px;
+      margin: 10px auto;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .btn-header {
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .amazon-search {
+      display: flex;
+      background-color: #f3f3f3;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .amazon-search input {
+      border: none;
+      padding: 10px 15px;
+      flex-grow: 1;
+      outline: none;
+      background-color: white;
+    }
+
+    .amazon-search button {
+      background-color: #febd69;
+      border: none;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .checkout-btn {
+      position: relative;
+      padding-right: 30px;
+    }
+
+    .checkout-badge {
+      position: absolute;
+      top: -5px;
+      right: 5px;
+      background-color: red;
+      color: white;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 50%;
+    }
+
+    .card {
+      border-radius: 15px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-check-input {
+      margin-right: 10px;
+    }
+
+    .container {
+      padding-top: 30px;
+      padding-bottom: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header Bar -->
+<div class="header-bar">
+  <!-- Home Button -->
+  <div class="header-left">
+    <a href="/welcome" class="btn btn-dark btn-header">🏠 Home</a>
+  </div>
+
+  <!-- Center Search Form -->
+  <div class="header-center">
+    <div class="amazon-search">
+      <input type="text" id="searchInput" placeholder="Search books..." />
+      <button type="button" id="searchButton">🔍</button>
+    </div>
+  </div>
+
+  <!-- Checkout and Logout -->
+  <div class="header-right">
+    <button type="submit" form="bookForm" class="btn btn-primary btn-header checkout-btn">
+      🛒 Checkout
+      <span id="selected-count" class="checkout-badge">0</span>
+    </button>
+    <a href="/logout" class="btn btn-danger btn-header">🚪 Logout</a>
+  </div>
+</div>
+
+<!-- Flash Message -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <script>alert({{ messages[0]|tojson }});</script>
+  {% endif %}
+{% endwith %}
+
+<!-- Book Cards -->
+<div class="container">
+  <form id="bookForm" method="POST" action="/checkout">
+    <div class="row">
+      {% for book in books %}
+      <div class="col-sm-12 col-md-6 col-lg-4">
+        <div class="card p-3">
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input book-checkbox"
+              type="checkbox"
+              name="selected_book_ids"
+              value="{{ book.id }}"
+              id="book{{ book.id }}"
+            />
+            <label class="form-check-label fw-bold" for="book{{ book.id }}">
+              {{ book.title }}
+            </label>
+          </div>
+          <p><strong>Author:</strong> {{ book.author }}</p>
+          <p><strong>Year:</strong> {{ book.PublishingYear }}</p>
+          <p><strong>Price:</strong> ${{ book.SalePrice }}</p>
+          <p><strong>Rating:</strong> {{ book.AverageRating }}</p>
+          <p><strong>Publisher:</strong> {{ book.PublisherName }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </form>
+</div>
+
+<!-- Scripts -->
+<script>
+  // Handle selection count
+  const checkboxes = document.querySelectorAll(".book-checkbox");
+  const countBadge = document.getElementById("selected-count");
+
+  checkboxes.forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const selected = document.querySelectorAll(".book-checkbox:checked").length;
+      countBadge.textContent = selected;
+    });
+  });
+
+  // Handle Search Button Click
+  document.getElementById("searchButton").addEventListener("click", function () {
+    const input = document.getElementById("searchInput").value.trim();
+
+    const form = document.createElement("form");
+    form.method = "post";
+    form.action = "/search_books";
+
+    const hidden = document.createElement("input");
+    hidden.type = "hidden";
+    hidden.name = "search";
+    hidden.value = input; // empty input allowed
+
+    form.appendChild(hidden);
+    document.body.appendChild(form);
+    form.submit();
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

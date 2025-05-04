@@ -1,0 +1,26 @@
+body {
+    background-color: #f7f7f7;
+    font-family: 'Arial', sans-serif;
+}
+
+.container {
+    height: 100vh;
+}
+
+.row {
+    align-items: center; /* Centers the login card vertically */
+}
+
+.card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+    background-color: #0056b3;
+    border-color: #004085;
+}

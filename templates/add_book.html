@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Book</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        body { 
+            background-image: url('https://via.placeholder.com/1600x900'); /* Placeholder for your chosen background */
+            background-size: cover;
+            background-position: center;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            align-items: center; /* Center the form vertically */
+            justify-content: center; /* Center the form horizontally */
+        }
+        .container { 
+            width: 100%;
+            max-width: 900px; /* Maximum width of the form */
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.85); /* Semi-transparent background for readability */
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .header {
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #555; /* Lighter border for visibility */
+            text-align: center; /* Center the header text */
+        }
+        .form-label {
+            font-weight: bold;
+            color: #ccc; /* Lighter text color for better readability */
+        }
+        .form-control {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ced4da;
+            color: #495057;
+            margin-bottom: 15px; /* Consistent spacing between form fields */
+        }
+        .btn-custom {
+            background-color: #198754; /* Green button */
+            border-color: #198754;
+        }
+        .btn-custom:hover {
+            background-color: #157347;
+            border-color: #145c34;
+        }
+        .btn-light {
+            background-color: #f8f9fa;
+            color: #212529;
+            border: 1px solid #ced4da;
+        }
+        .btn-light:hover {
+            background-color: #e2e6ea;
+            color: #212529;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Add a New Book</h2>
+        </div>
+        <form action="/add_book" method="post">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="Enter book title" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="authorId" class="form-label">Author ID</label>
+                    <input type="number" class="form-control" id="authorId" name="author_id" placeholder="Enter author ID" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="genreId" class="form-label">Genre ID</label>
+                    <input type="number" class="form-control" id="genreId" name="genre_id" placeholder="Enter genre ID" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="publishingYear" class="form-label">Publishing Year</label>
+                    <input type="number" class="form-control" id="publishingYear" name="publishing_year" placeholder="Enter publishing year" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="averageRating" class="form-label">Average Rating</label>
+                    <input type="text" class="form-control" id="averageRating" name="average_rating" placeholder="Enter average rating" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="ratingsCount" class="form-label">Ratings Count</label>
+                    <input type="number" class="form-control" id="ratingsCount" name="ratings_count" placeholder="Enter ratings count" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="publisherId" class="form-label">Publisher ID</label>
+                    <input type="number" class="form-control" id="publisherId" name="publisher_id" placeholder="Enter publisher ID" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="salePrice" class="form-label">Sale Price</label>
+                    <input type="text" class="form-control" id="salePrice" name="sale_price" placeholder="Enter sale price" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="salesRank" class="form-label">Sales Rank</label>
+                    <input type="number" class="form-control" id="salesRank" name="sales_rank" placeholder="Enter sales rank" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="units" class="form-label">Units</label>
+                    <input type="number" class="form-control" id="units" name="units" placeholder="Enter units" required>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-custom">Submit</button>
+                <a href="/manage_books" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

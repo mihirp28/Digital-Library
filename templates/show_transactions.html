@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transactions</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 95%; /* Adjusted to use more of the viewport width */
+            max-width: 1200px; /* Maximum width to prevent excessively wide tables */
+            overflow-x: auto; /* Ensures the table is scrollable horizontally on smaller screens */
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .table {
+            width: 100%; /* Ensures the table expands to the width of its container */
+            min-width: 600px; /* Minimum width to ensure table content displays properly */
+        }
+        thead th {
+            background-color: #007bff;
+            color: white;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Transaction History</h2>
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Transaction ID</th>
+                    <th scope="col">Book ID</th>
+                    <th scope="col">Gross Sales</th>
+                    <th scope="col">Publisher Revenue</th>
+                    <th scope="col">Units Sold</th>
+                    <th scope="col">User ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction[0] }}</td>
+                    <td>{{ transaction[1] }}</td>
+                    <td>{{ transaction[2] }}</td>
+                    <td>{{ transaction[3] }}</td>
+                    <td>{{ transaction[4] }}</td>
+                    <td>{{ transaction[5] }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">No transactions found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
